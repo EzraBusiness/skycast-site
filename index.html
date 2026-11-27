@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Skycast — beautiful live weather with animated wind maps, radar, air quality and 16-day forecasts." />
+    <meta name="theme-color" content="#43b2f0" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='26' cy='24' r='12' fill='%23ffc53d'/%3E%3Cpath fill='%23fff' d='M48 52H20a11 11 0 0 1-1.6-21.9A15 15 0 0 1 49.5 26 13 13 0 0 1 48 52z'/%3E%3C/svg%3E" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <title>Skycast Weather</title>
+    <script type="module" crossorigin src="./assets/index-C6-xHG-2.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DZ7mTc0q.css">
+  </head>
+  <body>
+    <canvas id="sky" aria-hidden="true"></canvas>
+    <div class="aero-decor" aria-hidden="true">
+      <div class="aero-flare"></div>
+      <div class="bubble" style="width:90px;height:90px;top:22%;left:3%"></div>
+      <div class="bubble" style="width:40px;height:40px;top:34%;left:7%"></div>
+      <div class="bubble" style="width:140px;height:140px;top:48%;right:2%"></div>
+      <div class="bubble" style="width:56px;height:56px;top:70%;left:2%"></div>
+      <div class="bubble" style="width:34px;height:34px;top:16%;right:14%"></div>
+      <div class="aero-hill a"></div>
+      <div class="aero-hill b"></div>
+    </div>
+
+    <svg id="defs" width="0" height="0" style="position:absolute" aria-hidden="true">
+      <defs>
+        <radialGradient id="g-sun" cx=".4" cy=".4"><stop offset="0" stop-color="#fff3b0"/><stop offset="1" stop-color="#ffb21e"/></radialGradient>
+        <linearGradient id="g-moon" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fffbe6"/><stop offset="1" stop-color="#c9cbe0"/></linearGradient>
+        <linearGradient id="g-cloud" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d4deea"/></linearGradient>
+        <linearGradient id="g-cloud-dark" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c3ccd8"/><stop offset="1" stop-color="#8794a6"/></linearGradient>
+        <linearGradient id="g-cloud-storm" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8b93a3"/><stop offset="1" stop-color="#4b5263"/></linearGradient>
+      </defs>
+    </svg>
+
+    <header class="topbar">
+      <a class="brand" href="./">
+        <svg viewBox="0 0 64 64" width="30" height="30"><circle cx="26" cy="24" r="12" fill="url(#g-sun)"/><path fill="url(#g-cloud)" d="M48 52H20a11 11 0 0 1-1.6-21.9A15 15 0 0 1 49.5 26 13 13 0 0 1 48 52z"/></svg>
+        <span>Skycast</span>
+      </a>
+      <div class="search">
+        <span class="search-ico" id="search-ico"></span>
+        <input id="q" type="search" placeholder="Search city or place…" autocomplete="off" spellcheck="false" aria-label="Search location" />
+        <ul id="results" class="results" role="listbox" hidden></ul>
+      </div>
+      <button id="locate" class="icon-btn" title="Use my location" aria-label="Use my location"></button>
+      <div class="units" role="group" aria-label="Units">
+        <button data-u="metric">°C</button><button data-u="imperial">°F</button>
+      </div>
+    </header>
+
+    <nav id="saved" class="saved" aria-label="Saved places"></nav>
+
+    <main id="app">
+      <section class="hero" id="hero">
+        <div class="loading">Loading weather…</div>
+      </section>
+
+      <section class="card span-all" id="hourly-card">
+        <div class="card-head">
+          <h2>Hourly forecast</h2>
+          <div class="tabs" id="tabs">
+            <button data-m="temp" class="on">Temperature</button>
+            <button data-m="precip">Precipitation</button>
+            <button data-m="wind">Wind</button>
+            <button data-m="humidity">Humidity</button>
+            <button data-m="pressure">Pressure</button>
+            <button data-m="uv">UV</button>
+          </div>
+        </div>
+        <div class="hourly-scroll" id="hourly"></div>
+      </section>
+
+      <section class="tiles span-all" id="tiles-top"></section>
+
+      <section class="card span-all map-card">
+        <div class="card-head">
+          <h2>Wind patterns</h2>
+          <div class="map-ctrls">
+            <button id="play" class="pill" aria-label="Play animation"></button>
+            <input id="hour" type="range" min="0" max="47" value="0" aria-label="Forecast hour" />
+            <span id="hour-lbl" class="hour-lbl">–</span>
+            <button id="radar" class="pill toggle">Radar</button>
+          </div>
+        </div>
+        <div class="map-wrap">
+          <div id="map"></div>
+          <div class="map-status" id="map-status"></div>
+          <div class="legend" id="legend"></div>
+        </div>
+        <p class="hint">Particles trace the 10&nbsp;m wind field; colour shows speed. Drag the slider or press play to see the next 48 hours. Click anywhere on the map to load its forecast.</p>
+      </section>
+
+      <section class="card" id="wind-card"><h2>Wind now</h2><div id="compass"></div></section>
+      <section class="card" id="profile-card"><h2>Wind aloft</h2><div id="profile"></div><div id="nowcast"></div></section>
+      <section class="card daily-card" id="daily-card"><h2>16-day forecast</h2><div id="daily"></div></section>
+      <section class="card" id="air-card"><h2>Air quality</h2><div id="air"></div></section>
+      <section class="card" id="sun-card"><h2>Sun</h2><div id="sun"></div></section>
+      <section class="card" id="moon-card"><h2>Moon</h2><div id="moon"></div></section>
+      <section class="tiles span-all" id="tiles"></section>
+    </main>
+
+    <footer class="foot">
+      Weather &amp; air quality by <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (CC BY 4.0) ·
+      Radar by <a href="https://www.rainviewer.com/" target="_blank" rel="noopener">RainViewer</a> ·
+      Basemap © <a href="https://www.esri.com/" target="_blank" rel="noopener">Esri</a>, <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors
+    </footer>
+
+  </body>
+</html>
